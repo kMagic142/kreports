@@ -1,0 +1,174 @@
+server: "SkyWars"
+
+redis:
+  hostname: "localhost"
+  port: "3306"
+  password: "root"
+  maximum-connections: 10
+  useSSL: false
+
+mysql:
+  hostname: "localhost"
+  port: "3306"
+  database: "test"
+  username: "root"
+  password: "root"
+  minimum-connections: 10
+  maximum-connections: 10
+  connection-timeout: 5000
+  properties:
+    useSSL: false
+    serverTimezone: "Europe/Bucharest"
+
+reasons:
+  "CHAT_ABUSE": "CHAT_REPORT"
+  "CHEATING": "PLAYER_REPORT"
+  "BAD_NAME": "PLAYER_REPORT"
+  "CROSS_TEAMING": "PLAYER_REPORT"
+  "BUG_REPORT": "BUG_REPORT"
+  "OTHER": "MISC"
+
+main-menu:
+  title: "Report %player_name%"
+  reasons:
+    1:
+      text: "⚪ Chat Abuse/Scam"
+      hover-text: "&7Click to report %player_name% for Chat Abuse/Scam"
+      reason: CHAT_ABUSE
+    2:
+      text: "⚪ Cheating"
+      hover-text: "&7Click to report %player_name% for Cheating"
+      reason: CHEATING
+    3:
+      text: "⚪ Bad Name"
+      hover-text: "&7Click to report %player_name% for having a Bad Name"
+      reason: BAD_NAME
+    4:
+      text: "⚪ Cross Teaming"
+      hover-text: "&7Click to report %player_name% for Cross Teaming"
+      reason: CROSS_tEAMING
+    5:
+      text: "⚪ Bug Abuse"
+      hover-text: "&7Click to report %player_name% for Bug Abuse"
+      reason: BUG_REPORT
+    6:
+      text: "⚪ Other"
+      hover-text: "&7Click to report %player_name% for a reason that is not listed here."
+      reason: OTHER
+
+staff-reports-gui:
+  title: "Reports"
+  rows: 4
+  items-name: "&c{reportedPlayer} &8- &7{reason}"
+  items-id: 340
+  items-lore:
+    - "&8* &fOpened by: &e{player}"
+    - "&8* &fServer: &e{server}"
+    - "&r "
+    - "&8» &aClick to claim this report"
+  claimed-name: "&c{reportedPlayer} &8- &7{reason}"
+  claimed-id: 387
+  claimed-lore:
+    - "&8* &fOpened by: &e{player}"
+    - "&8* &fServer: &e{server}"
+    - "&8* &fClaimed by: &e{claimer}"
+    - "&r "
+    - "&8» &aClick to claim this report"
+  exit:
+    enabled: true
+    name: "&cExit"
+    id: 262
+    lore:
+      - "&7Exit the menu"
+  previous:
+    name: "&cPrevious page"
+    id: 339
+  next:
+    name: "&aNext Page"
+    id: 339
+
+
+reports-gui:
+  title: "Reports"
+  rows: 4
+  items-name: "&c{reportedPlayer} &8- &7{reason}"
+  items-id: 340
+  items-lore:
+    - "&8* &fServer: &e{server}"
+  claimed-name: "&c{reportedPlayer} &8- &7{reason}"
+  claimed-id: 387
+  claimed-lore:
+    - "&8* &fServer: &e{server}"
+    - "&8* &fClaimed by: &e{claimer}"
+  exit:
+    enabled: true
+    name: "&cExit"
+    id: 262
+    lore:
+      - "&7Exit the menu"
+  previous:
+    name: "&cPrevious page"
+    id: 339
+  next:
+    name: "&aNext Page"
+    id: 339
+
+staff-actions-gui:
+  title: "Report Actions"
+  rows: 4
+  close:
+    name: "&eClose without a response"
+    id: 159:4
+    slot: 12
+    lore:
+      - "&7Close this report"
+      - "&7without the player"
+      - "&7knowing if the reported"
+      - "&7player was sanctioned."
+      - "&r"
+      - "&eClick to close the report"
+  close2:
+    name: "&aClose with positive response"
+    id: 159:13
+    slot: 13
+    lore:
+      - "&7Close this report"
+      - "&7and notify the player"
+      - "&7that the reported player"
+      - "&7has been sanctioned."
+      - "&r"
+      - "&eClick to close the report"
+  close3:
+    name: "&cClose with negative response"
+    id: 159:14
+    slot: 14
+    lore:
+      - "&7Close this report"
+      - "&7and notify the player"
+      - "&7that the reported player"
+      - "&7has not been sanctioned."
+      - "&r"
+      - "&eClick to close the report"
+  conversation:
+    name: "&6Open a conversation"
+    id: 339
+    slot: 22
+    lore:
+      - "&7Open a conversation"
+      - "&7between you and the player"
+      - "&r"
+      - "&eClick to open a conversation"
+  closeconversation:
+    name: "&cClose the conversation"
+    id: 166
+    slot: 22
+    lore:
+      - "&7Close the conversation"
+      - "&7between you and the player"
+      - "&r"
+      - "&eClick to close the conversation"
+  back:
+    enabled: true
+    name: "&cExit Menu"
+    id: 262
+    slot: 32

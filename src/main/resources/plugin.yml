@@ -1,0 +1,27 @@
+name: kReports
+version: '${project.version}'
+main: ro.kmagic.kreports.Reports
+authors: [ kMagic ]
+description: Report system for Topicraft
+
+commands:
+  report:
+    description: Report a player.
+    permission: report.use
+  reports:
+    description: Open the reports menu.
+    permission: report.use
+
+permissions:
+  report.use:
+    description: Allow user to report players
+    default: true
+  report.help:
+    description: Allow user to see help message
+    default: false
+  report.staff:
+    description: Allow staff members to resolve reports
+    default: false
+  report.admin:
+    description: Allow players to use admin commands
+    default: op
