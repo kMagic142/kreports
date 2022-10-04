@@ -35,14 +35,15 @@ public class CloseCommand implements CommandInterface {
                     return;
                 }
 
-                instance.getReportManager().removeReport(report);
-                instance.getMySQL().deleteReport(report);
-
                 if(report.getClaimer() != null) {
                     instance.getMySQL().setStaff(report.getClaimer(), instance.getMySQL().getStaff(report.getClaimer()) != null ? instance.getMySQL().getStaff(report.getClaimer()) : 0);
                 }
 
+                instance.getReportManager().removeReport(report);
+                instance.getMySQL().deleteReport(report);
                 instance.getServer().getPluginManager().callEvent(new ReportClosedEvent(report, false));
+                instance.getRedis().reportClosed(report, false);
+                player.sendMessage(Utils.color(instance.getMessages().getString("report-closed")));
             } else {
                 sender.sendMessage(Utils.color(instance.getMessages().getString("use-staff-menu")));
             }
@@ -61,7 +62,8 @@ public class CloseCommand implements CommandInterface {
 
             instance.getReportManager().removeReport(report);
             instance.getMySQL().deleteReport(report);
-            instance.getServer().getPluginManager().callEvent(new ReportClosedEvent(report, false));
+            instance.getServer().getPluginManager().callEvent(new ReportClosedEvent(report, true));
+            instance.getRedis().reportClosed(report, true);
         }
 
     }

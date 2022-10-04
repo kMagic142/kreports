@@ -1,5 +1,6 @@
 package ro.kmagic.kreports.commands;
 
+import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
@@ -31,43 +32,29 @@ public class ReplyCommand implements CommandInterface {
             return;
         }
 
-        if(!sender.hasPermission("report.staff")) {
-            Player player = (Player) sender;
-            Report report = instance.getMySQL().getReport(player.getName());
+        Player player = (Player) sender;
+        String reply = String.join(" ", args);
 
-            if(report == null) {
-                player.sendMessage(Utils.color(messages.getString("no-reports-opened")));
-                return;
-            }
+        Report report;
 
-            if(report.getClaimer() == null) {
-                player.sendMessage(Utils.color(messages.getString("not-claimed-yet")));
-                return;
-            }
-
-            if(!report.isConversation()) {
-                player.sendMessage(Utils.color(messages.getString("report-doesnt-have-conversation")));
-                return;
-            }
-
-            String reply = String.join(" ", args);
-            instance.getServer().getPluginManager().callEvent(new ReportReplyEvent(report, reply, player.getName()));
+        if(player.hasPermission("report.staff")) {
+            report = instance.getMySQL().getReportClaimedBy(player.getName());
         } else {
-            Player player = (Player) sender;
-            Report report = instance.getMySQL().getReport(player.getName());
-
-            if(report == null) {
-                player.sendMessage(Utils.color(messages.getString("no-reports-claimed")));
-                return;
-            }
-
-            if(!report.isConversation()) {
-                player.sendMessage(Utils.color(messages.getString("report-doesnt-have-conversation")));
-                return;
-            }
-
-            String reply = String.join(" ", args);
-            instance.getServer().getPluginManager().callEvent(new ReportReplyEvent(report, reply, player.getName()));
+            report = instance.getMySQL().getReport(player.getName());
         }
+
+        if(report == null) {
+            player.sendMessage(Utils.color(messages.getString("no-reports-opened")));
+            return;
+        }
+
+        if(!report.isConversation()) {
+            player.sendMessage(Utils.color(messages.getString("report-doesnt-have-conversation")));
+            return;
+        }
+
+
+        instance.getRedis().reportReply(report, reply, player.getName());
+        //if(report.getServer().equals(instance.getConfig().getString("server"))) Bukkit.getPluginManager().callEvent(new ReportReplyEvent(report, reply, player.getName()));
     }
 }

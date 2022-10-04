@@ -49,6 +49,11 @@ public class ReportCommand implements CommandInterface {
 
                 Player player = (Player) sender;
 
+                if(args[0].equalsIgnoreCase(player.getName())) {
+                    sender.sendMessage(Utils.color(messages.getString("no-player-specified")));
+                    break;
+                }
+
                 MainMenu mainMenu = new MainMenu(player, args[0]);
                 mainMenu.open();
                 break;
@@ -63,11 +68,6 @@ public class ReportCommand implements CommandInterface {
                 String reportedPlayer = args[0];
                 String reason = args[1];
 
-                if (Bukkit.getPlayerExact(reportedPlayer) == null) {
-                    sender.sendMessage(Utils.color(messages.getString("invalid-player")));
-                    break;
-                }
-
                 if (instance.getReasonManager().getReason(reason) == null) {
                     sender.sendMessage(Utils.color(messages.getString("invalid-reason")));
                     break;
@@ -75,15 +75,16 @@ public class ReportCommand implements CommandInterface {
 
                 Player player = (Player) sender;
 
-                if(instance.getMySQL().getReport(player.getName()) != null) {
-                    sender.sendMessage(Utils.color(messages.getString("you-already-have-a-report-opened")));
+                if(args[0].equalsIgnoreCase(player.getName())) {
+                    sender.sendMessage(Utils.color(messages.getString("no-player-specified")));
                     break;
                 }
 
-                Player bukkitReported = Bukkit.getPlayerExact(reportedPlayer);
-
-                Report report = new Report(player.getName(), bukkitReported.getName(), instance.getReasonManager().getReason(reason));
+                Report report = new Report(player.getName(), reportedPlayer, instance.getReasonManager().getReason(reason));
                 instance.getServer().getPluginManager().callEvent(new ReportCreatedEvent(report));
+                player.sendMessage(Utils.color(messages.getString("player-notification")));
+                instance.getRedis().sendReport(report);
+                break;
             }
         }
     }

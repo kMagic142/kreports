@@ -25,3 +25,6 @@ permissions:
   report.admin:
     description: Allow players to use admin commands
     default: op
+  report.reload:
+    description: Allow players to reload the plugin
+    default: op

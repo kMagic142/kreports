@@ -40,31 +40,42 @@ public class Redis {
 
     public void sendReport(Report report) {
         try(Jedis rsc = getConnectionPoolManager().getConnection()) {
-            String message = "reportcreated" + ";" + report.getPlayer() + ";" + report.getReportedPlayer()
-                    + ";" + report.getReason().getName() + ";" + report.getServer() + ";" + report.getHastebinURL();
+            String message = "reportcreated" + ";" + report.getId() + ";" + report.getServer();
             rsc.publish("topicraftreports", message);
         }
     }
 
     public void reportReply(Report report, String reply, String replier) {
         try(Jedis rsc = getConnectionPoolManager().getConnection()) {
-            String message = "reportcreated" + ";" + report.getPlayer() + ";" + replier + ";" + reply;
+            String message = "reportreply" + ";" + report.getId() + ";" + replier + ";" + reply;
             rsc.publish("topicraftreports", message);
         }
     }
 
-    public void reportClaimed(Report report) {
+    public void reportClaimed(Report report, String claimer) {
         try(Jedis rsc = getConnectionPoolManager().getConnection()) {
-            String message = "reportclaimed" + ";" + report.getPlayer() + ";" + report.getReportedPlayer()
-                    + ";" + report.getReason().getName() + ";" + report.getClaimer() + ";" + report.getServer();
+            String message = "reportclaimed" + ";" + report.getId() + ";" + report.getServer() + ";" + claimer;
             rsc.publish("topicraftreports", message);
         }
     }
 
     public void reportClosed(Report report, boolean isClosedByStaff) {
         try(Jedis rsc = getConnectionPoolManager().getConnection()) {
-            String message = "reportclosed" + ";" + report.getPlayer() + ";" + report.getReportedPlayer()
-                    + ";" + report.getReason().getName() + ";" + report.getClaimer() + ";" + report.getServer() + isClosedByStaff;
+            String message = "reportclosed" + ";" + report.getPlayer() + ";" + report.getServer() + ";" + isClosedByStaff + ";" + report.getClaimer() + ";" + report.getReportedPlayer();
+            rsc.publish("topicraftreports", message);
+        }
+    }
+
+    public void reportClosed(Report report, boolean isClosedByStaff, boolean positive) {
+        try(Jedis rsc = getConnectionPoolManager().getConnection()) {
+            String message = "reportclosed" + ";" + report.getPlayer() + ";" + report.getServer() + ";" + isClosedByStaff + ";" + report.getClaimer() + ";" + report.getReportedPlayer() + ";" + positive;
+            rsc.publish("topicraftreports", message);
+        }
+    }
+
+    public void conversationUpdate(Report report, boolean conversation) {
+        try(Jedis rsc = getConnectionPoolManager().getConnection()) {
+            String message = "conversationupdate" + ";" + report.getId() + ";" + conversation;
             rsc.publish("topicraftreports", message);
         }
     }

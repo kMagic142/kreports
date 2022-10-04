@@ -2,7 +2,6 @@ package ro.kmagic.kreports.managers;
 
 import ro.kmagic.kreports.Reports;
 import ro.kmagic.kreports.data.types.reasons.Reason;
-import ro.kmagic.kreports.utils.Utils;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -28,5 +27,9 @@ public class ReasonManager {
 
     public List<Reason> getReasons() {
         return cache;
+    }
+
+    public void clear() {
+        cache.clear();
     }
 }

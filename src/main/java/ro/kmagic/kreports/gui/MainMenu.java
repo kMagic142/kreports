@@ -1,5 +1,6 @@
 package ro.kmagic.kreports.gui;
 
+import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
@@ -20,7 +21,9 @@ public class MainMenu {
         Reports reports = Reports.getInstance();
         FileConfiguration config = reports.getConfig();
 
-        BookUtil.PageBuilder pageBuilder = new BookUtil.PageBuilder().add(Utils.color(player, config.getString("main-menu.title"))).newLine().newLine();
+        Player bukkitReportedPlayer = Bukkit.getPlayerExact(reportedPlayer);
+
+        BookUtil.PageBuilder pageBuilder = new BookUtil.PageBuilder().add(Utils.color(bukkitReportedPlayer, config.getString("main-menu.title"))).newLine().newLine();
 
         config.getConfigurationSection("main-menu.reasons").getKeys(false).forEach(key -> {
             ConfigurationSection reason = config.getConfigurationSection("main-menu.reasons").getConfigurationSection(key);
@@ -28,12 +31,10 @@ public class MainMenu {
             String hoverText = reason.getString("hover-text");
             Reason itemReason = reports.getReasonManager().getReason(reason.getString("reason"));
 
-            Utils.info(itemReason != null ? itemReason.getName() : null);
-
             pageBuilder.add(
                     BookUtil.TextBuilder.of(Utils.color(player, text))
                             .onClick(BookUtil.ClickAction.runCommand("/report " + reportedPlayer + " " + itemReason.getName()))
-                            .onHover(BookUtil.HoverAction.showText(Utils.color(player, hoverText)))
+                            .onHover(BookUtil.HoverAction.showText(Utils.color(bukkitReportedPlayer, hoverText)))
                             .build()
             ).newLine().newLine();
         });
@@ -45,7 +46,6 @@ public class MainMenu {
     }
 
     public void open() {
-        player.sendMessage(Utils.color("&aOpening book menu for you..."));
         BookUtil.openPlayer(player, book);
     }
 }

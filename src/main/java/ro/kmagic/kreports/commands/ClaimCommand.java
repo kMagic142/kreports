@@ -5,7 +5,6 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import ro.kmagic.kreports.Reports;
 import ro.kmagic.kreports.commands.handler.CommandInterface;
-import ro.kmagic.kreports.data.types.events.ReportClaimEvent;
 import ro.kmagic.kreports.data.types.reports.Report;
 import ro.kmagic.kreports.utils.Utils;
 
@@ -41,7 +40,14 @@ public class ClaimCommand implements CommandInterface {
             return;
         }
 
+        String message = Utils.color(instance.getMessages().getString("claim-staff-notification")
+                .replace("{claimer}", player.getName())
+                .replace("{player}", report.getPlayer())
+                .replace("{server}", report.getServer())
+                .replace("{reason}", report.getReason().getName()));
+
         report.setClaimer(player.getName());
-        instance.getServer().getPluginManager().callEvent(new ReportClaimEvent(report));
+        instance.getRedis().reportClaimed(report, player.getName());
+        if(report.getServer().equals(instance.getConfig().getString("server")))  player.sendMessage(message);
     }
 }

@@ -60,5 +60,23 @@ public class StaffCommand implements CommandInterface {
             instance.getMySQL().removeStaff(player);
             sender.sendMessage(Utils.color(instance.getMessages().getString("staff-deleted")));
         }
+
+        if(args[0].equalsIgnoreCase("add")) {
+            if(args.length < 2) {
+                sender.sendMessage(Utils.color(messages.getString("no-player-specified-staff")));
+                return;
+            }
+
+            String player = args[1];
+            Integer resolved = instance.getMySQL().getStaff(player);
+
+            if(resolved != null) {
+                sender.sendMessage(Utils.color(messages.getString("staff-existing")));
+                return;
+            }
+
+            instance.getMySQL().setStaff(player, 0);
+            sender.sendMessage(Utils.color(instance.getMessages().getString("staff-added")));
+        }
     }
 }

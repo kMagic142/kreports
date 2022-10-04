@@ -5,15 +5,22 @@ import dev.triumphteam.gui.guis.Gui;
 import dev.triumphteam.gui.guis.GuiItem;
 import dev.triumphteam.gui.guis.PaginatedGui;
 import net.kyori.adventure.text.Component;
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemFlag;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.material.MaterialData;
 import ro.kmagic.kreports.Reports;
+import ro.kmagic.kreports.data.types.events.ReportClaimEvent;
 import ro.kmagic.kreports.data.types.reports.Report;
 import ro.kmagic.kreports.managers.ReportsManager;
 import ro.kmagic.kreports.utils.Utils;
 
+import java.text.SimpleDateFormat;
+import java.time.Instant;
+import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
@@ -21,6 +28,7 @@ import java.util.Objects;
 public class StaffReportsGUI {
 
     private final PaginatedGui gui;
+    private int updateTask;
 
     public StaffReportsGUI(Player player) {
         Reports instance = Reports.getInstance();
@@ -36,34 +44,56 @@ public class StaffReportsGUI {
                 .disableAllInteractions()
                 .create();
 
+        gui.setCloseGuiAction(event -> {
+            if(updateTask != 0) Bukkit.getScheduler().cancelTask(updateTask);
+        });
+
         String name = menuSection.getString("items-name");
-        List<String> lore = menuSection.getStringList("items-lore");
-        int id = menuSection.getInt("items-id");
+        String id = menuSection.getString("items-id");
         boolean arrowEnabled = menuSection.getConfigurationSection("exit").getBoolean("enabled");
+        byte data = 0;
+
+        if(id.contains(":")) data = Byte.parseByte(id.split(":")[1]);
+
+        String material = id.split(":")[0];
 
         if(arrowEnabled) {
             String backname = menuSection.getConfigurationSection("exit").getString("name");
             List<String> backlore = menuSection.getConfigurationSection("exit").getStringList("lore");
-            int backid = menuSection.getConfigurationSection("exit").getInt("id");
+            String backid = menuSection.getConfigurationSection("exit").getString("id");
 
+            byte data2 = 0;
 
-            GuiItem item = ItemBuilder.from(new MaterialData(backid).getItemType())
+            if(backid.contains(":")) data2 = Byte.parseByte(backid.split(":")[1]);
+
+            String backmaterial = backid.split(":")[0];
+            
+            GuiItem item = ItemBuilder.from(Material.getMaterial(backmaterial).getNewData(data2).toItemStack())
                     .name(Component.text(Utils.color(backname)))
                     .lore(Utils.formatComponentList((backlore)))
+                    .amount(1)
                     .asGuiItem(event -> {
                         gui.close(player);
                     });
             gui.setItem(6, 5, item);
         }
 
-        for(Report report : reportsManager.getReports().values()) {
+        for(Report report : reportsManager.getReports()) {
+            Instant instant = Instant.ofEpochSecond(report.getTimestamp());
+            Date date1 = Date.from(instant);
+
+            SimpleDateFormat DateFor = new SimpleDateFormat("dd/MM/yyyy HH:mm");
+            String date = DateFor.format(date1);
+
             if(report.getClaimer() != null) {
                 if(Objects.equals(report.getClaimer(), player.getName())) {
                     String baname = menuSection.getString("claimed-name")
                             .replace("{reportedPlayer}", report.getReportedPlayer())
                             .replace("{reason}", "" + report.getReason().getName())
                             .replace("{server}", report.getServer())
-                            .replace("{claimer}", instance.getMessages().getString("you"));
+                            .replace("{date}", date)
+                            .replace("{claimer}", instance.getMessages().getString("you"))
+                            .replace("{player}", report.getPlayer());
 
                     List<String> balore = new LinkedList<>();
 
@@ -71,16 +101,27 @@ public class StaffReportsGUI {
                         balore.add(str.replace("{reportedPlayer}", report.getReportedPlayer())
                                 .replace("{reason}", "" + report.getReason().getName())
                                 .replace("{server}", report.getServer())
-                                .replace("{claimer}", instance.getMessages().getString("you")));
+                                .replace("{date}", date)
+                                .replace("{claimer}", instance.getMessages().getString("you"))
+                                .replace("{player}", report.getPlayer()));
                     }
 
-                    int baid = menuSection.getInt("claimed-id");
+                    String baid = menuSection.getString("claimed-id");
+                    byte badata = 0;
 
-                    GuiItem item = ItemBuilder.from(new MaterialData(baid).getItemType())
+                    if(baid.contains(":")) badata = Byte.parseByte(baid.split(":")[1]);
+
+                    String bamaterial = baid.split(":")[0];
+
+                    ItemStack itemstack = Material.getMaterial(bamaterial).getNewData(badata).toItemStack();
+                    itemstack.getItemMeta().addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
+
+                    GuiItem item = ItemBuilder.from(itemstack)
                             .name(Component.text(Utils.color(baname)))
                             .lore(Utils.formatComponentList((balore)))
+                            .amount(1)
                             .asGuiItem(event -> {
-                                new StaffActionsGUI(player);
+                                new StaffActionsGUI(player).updateMenu(20).open(player);
                             });
 
                     gui.addItem(item);
@@ -91,6 +132,7 @@ public class StaffReportsGUI {
                         .replace("{reportedPlayer}", report.getReportedPlayer())
                         .replace("{reason}", "" + report.getReason().getName())
                         .replace("{server}", report.getServer())
+                        .replace("{date}", date)
                         .replace("{claimer}", report.getClaimer());
 
                 List<String> balore = new LinkedList<>();
@@ -99,44 +141,87 @@ public class StaffReportsGUI {
                     balore.add(str.replace("{reportedPlayer}", report.getReportedPlayer())
                             .replace("{reason}", "" + report.getReason().getName())
                             .replace("{server}", report.getServer())
-                            .replace("{claimer}", report.getClaimer()));
+                            .replace("{claimer}", report.getClaimer())
+                            .replace("{date}", date)
+                            .replace("{player}", report.getPlayer()));
                 }
 
-                int baid = menuSection.getInt("claimed-id");
+                String baid = menuSection.getString("claimed-id");
 
-                GuiItem item = ItemBuilder.from(new MaterialData(baid).getItemType())
+                byte badata = 0;
+
+                if(baid.contains(":")) badata = Byte.parseByte(baid.split(":")[1]);
+
+                String bamaterial = baid.split(":")[0];
+
+                ItemStack itemstack = Material.getMaterial(bamaterial).getNewData(badata).toItemStack();
+                itemstack.getItemMeta().addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
+
+                GuiItem item = ItemBuilder.from(itemstack)
                         .name(Component.text(Utils.color(baname)))
                         .lore(Utils.formatComponentList((balore)))
+                        .amount(1)
                         .asGuiItem(event -> {
-                            new StaffActionsGUI(player);
+                            new StaffActionsGUI(player).updateMenu(20).open(player);
                         });
 
                 gui.addItem(item);
                 continue;
             }
 
-            GuiItem item = ItemBuilder.from(new MaterialData(id).getItemType())
+            List<String> balore = new LinkedList<>();
+
+            for (String str : menuSection.getStringList("items-lore")) {
+                balore.add(str.replace("{reportedPlayer}", report.getReportedPlayer())
+                        .replace("{reason}", "" + report.getReason().getName())
+                        .replace("{server}", report.getServer())
+                        .replace("{date}", date)
+                        .replace("{player}", report.getPlayer()));
+            }
+
+            ItemStack itemstack = Material.getMaterial(material).getNewData(data).toItemStack();
+            itemstack.getItemMeta().addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
+
+            GuiItem item = ItemBuilder.from(itemstack)
                     .name(Component.text(Utils.color(name.replace("{reportedPlayer}", report.getReportedPlayer())
                             .replace("{reason}", "" + report.getReason().getName())
+                            .replace("{date}", date)
                             .replace("{server}", report.getServer()))))
-                    .lore(Utils.formatComponentList(lore))
-                    .asGuiItem();
+                    .lore(Utils.formatComponentList(balore))
+                    .amount(1)
+                    .asGuiItem(event -> {
+                        report.setClaimer(player.getName());
+                        instance.getRedis().reportClaimed(report, player.getName());
+                        gui.update();
+                    });
 
             gui.addItem(item);
         }
 
         String previousname = menuSection.getConfigurationSection("previous").getString("name");
-        int previousid = menuSection.getConfigurationSection("previous").getInt("id");
+        String previousid = menuSection.getConfigurationSection("previous").getString("id");
+        byte previousdata = 0;
 
-        GuiItem previous = ItemBuilder.from(new MaterialData(previousid).getItemType())
+        if(previousid.contains(":")) previousdata = Byte.parseByte(previousid.split(":")[1]);
+
+        String previousmat = previousid.split(":")[0];
+
+        GuiItem previous = ItemBuilder.from(Material.getMaterial(previousmat).getNewData(previousdata).toItemStack())
                 .name(Component.text(Utils.color(previousname)))
+                .amount(1)
                 .asGuiItem(event -> gui.previous());
 
         String nextname = menuSection.getConfigurationSection("next").getString("name");
-        int nextid = menuSection.getConfigurationSection("next").getInt("id");
+        String nextid = menuSection.getConfigurationSection("next").getString("id");
+        byte nextdata = 0;
 
-        GuiItem next = ItemBuilder.from(new MaterialData(nextid).getItemType())
+        if(nextid.contains(":")) nextdata = Byte.parseByte(nextid.split(":")[1]);
+
+        String nextmat = nextid.split(":")[0];
+
+        GuiItem next = ItemBuilder.from(Material.getMaterial(nextmat).getNewData(nextdata).toItemStack())
                 .name(Component.text(Utils.color(nextname)))
+                .amount(1)
                 .asGuiItem(event -> gui.next());
 
 
@@ -146,6 +231,11 @@ public class StaffReportsGUI {
     }
 
     public PaginatedGui getGui() {
+        return gui;
+    }
+
+    public PaginatedGui updateMenu(int interval) {
+        updateTask = Bukkit.getScheduler().scheduleSyncRepeatingTask(Reports.getInstance(), gui::update, 0, interval* 20L);
         return gui;
     }
 

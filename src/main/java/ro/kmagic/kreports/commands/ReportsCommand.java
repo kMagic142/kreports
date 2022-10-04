@@ -16,6 +16,13 @@ public class ReportsCommand implements CommandInterface {
         Reports instance = Reports.getInstance();
         FileConfiguration messages = instance.getMessages();
 
+        if(args.length > 1 && args[0].equalsIgnoreCase("reload")) {
+            if(!sender.hasPermission("reports.reload")) return;
+            sender.sendMessage(Utils.color("&a&lReloading Reports..."));
+            instance.reload(sender);
+            return;
+        }
+
         if (!(sender instanceof Player)) {
             sender.sendMessage(Utils.color(messages.getString("only-player-command")));
             return;
@@ -24,9 +31,9 @@ public class ReportsCommand implements CommandInterface {
         Player player = (Player) sender;
 
         if(player.hasPermission("report.staff")) {
-            new StaffReportsGUI(player).getGui().open(player);
+            new StaffReportsGUI(player).updateMenu(20).open(player);
         } else {
-            new ReportsGUI(player).getGui().open(player);
+            new ReportsGUI(player).updateMenu(20).open(player);
         }
     }
 }

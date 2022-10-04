@@ -16,6 +16,7 @@ import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import java.util.logging.Level;
 
 public class Utils {
@@ -64,6 +65,18 @@ public class Utils {
                 e.printStackTrace();
             }
         }
+    }
+
+    public static int generateReportID() {
+        UUID idOne = UUID.randomUUID();
+        String str= "" + idOne;
+
+        int uid = str.hashCode();
+
+        String filterStr = "" + uid;
+        str = filterStr.replaceAll("-", "");
+
+        return Integer.parseInt(str);
     }
 
 }
